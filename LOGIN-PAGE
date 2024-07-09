@@ -1,0 +1,2030 @@
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using BO;
+using BL;
+using System.Windows.Forms;
+using System.Text;
+using System.Data;
+using System.Security.Cryptography;
+using System.Web.Services;
+using DALayer;
+using Microsoft.VisualBasic;
+
+public partial class Login : System.Web.UI.Page
+{
+    BOUserMaintenance objbo = new BOUserMaintenance();
+    BLUserMaintenance objbl = new BLUserMaintenance();
+    // Encryption pass = new Encryption();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+        //txtUserName.Text = "ADMIN";
+        lblDate.Text = DateTime.Now.ToString();
+
+        if (!IsPostBack)
+        {
+            string syear = Convert.ToString(DateTime.Now.Year.ToString());//lblDate.Text.Substring(6,4);
+            string smonth = Convert.ToString(DateTime.Now.Month.ToString());//lblDate.Text.Substring(3,2);
+            int iyear = Convert.ToInt16(syear);
+            string syear1 = Convert.ToString(iyear - 1);
+            int imonth = Convert.ToInt16(smonth);
+
+            if (imonth == 1 || imonth == 2 || imonth == 3)
+            {
+                txtMisDate.Text = "31-12-" + syear1;
+            }
+
+            else if (imonth == 4 || imonth == 5 || imonth == 6)
+            {
+                txtMisDate.Text = "31-03-" + syear;
+            }
+            else if (imonth == 7 || imonth == 8 || imonth == 9)
+            {
+                txtMisDate.Text = "30-06-" + syear;
+            }
+            else
+            {
+                txtMisDate.Text = "30-09-" + syear;
+            }
+
+            btnLogin.Attributes.Add("onclick", "return GeneratePwd();");
+
+        }
+
+    }
+
+    //protected void ImgBtnLogin_Click(object sender, ImageClickEventArgs e)
+    //{
+
+    //    try
+    //    {
+    //        if (Convert.ToInt16(ViewState["Login_Attempt"]) == 3 && txtUserName.Text.Trim() != "ADMIN")
+    //        {
+    //            objbo.ACTION = "L";
+    //            objbo.STAFF_NUM = txtUserName.Text.Trim();
+    //            objbo.LOCK_FLAG = "L";
+    //            Byte bResult = objbl.Update_Insert_User_Mast(objbo);
+    //            if (bResult == 0)
+    //            {
+    //                ViewState["Login_Attempt"] = 0;
+    //                MessageBox.Show("User ID Locked, please contact Admin");
+    //                return;
+    //            }
+    //        }
+    //        DataTable dt = new DataTable();
+    //        objbo.STAFF_NUM = txtUserName.Text;
+    //        objbo.ACTION = "S"; //Search selected records
+    //        dt = objbl.Fetch_User_Mast(objbo);
+
+    //        if (dt.Rows.Count > 0)
+    //        {
+    //            if (dt.Rows[0][7].ToString() == "Locked")
+    //            {
+    //                ViewState["Login_Attempt"] = 0;
+    //                MessageBox.Show("User ID is Locked \nPlease contact ADMIN...");
+    //                return;
+    //            }
+    //            if (dt.Rows[0][2].ToString() != pass.Encrypt(txtPassword.Text))
+    //            {
+    //                MessageBox.Show("Invalid Password");
+
+    //                if (ViewState["Login_Attempt"] == null)
+    //                    ViewState["Login_Attempt"] = 1;
+    //                else
+    //                    ViewState["Login_Attempt"] = Convert.ToInt16(ViewState["Login_Attempt"]) + 1;
+    //                return;
+    //            }
+    //            else
+    //            {
+    //                if (txtMisDate.Text.Length != 10)
+    //                {
+    //                    MessageBox.Show("Invalid Quarter-end Date");
+    //                    txtMisDate.Focus();
+    //                    return;
+    //                }
+    //                string MisDate_Check = txtMisDate.Text.Substring(0, 6);
+    //                if ((MisDate_Check != "31-03-") && (MisDate_Check != "30-06-") && (MisDate_Check != "30-09-") && (MisDate_Check != "31-12-"))
+    //                {
+    //                    MessageBox.Show("Please enter Quarter-end Date");
+    //                    txtMisDate.Focus();
+    //                    return;
+    //                }
+    //                string Mnth = txtMisDate.Text.Substring(3, 2);
+    //                string Yr = txtMisDate.Text.Substring(6, 4);
+    //                if (Convert.ToInt16(Yr) < 2014 || Convert.ToInt16(Yr) > DateTime.Now.Year)
+    //                {
+    //                    MessageBox.Show("Invalid Year");
+    //                    txtMisDate.Focus();
+    //                    return;
+    //                }
+    //                Session["Mnth_year"] = Mnth + Yr;
+    //               // Session["MisDate"] = txtMisDate.Text.Substring(0, 2) + "-" + Common_Func.StrMonth(txtMisDate.Text.Substring(3, 2)) + "-" + txtMisDate.Text.Substring(6, 4);
+    //                Session["MisDate1"] = txtMisDate.Text;
+    //                //Session["UserId"] = txtUserName.Text;
+    //                //Session["StaffNo"] = txtUserName.Text;
+    //                Session["UserId"] = dt.Rows[0][0].ToString();
+    //                Session["UserName"] = dt.Rows[0][1].ToString();
+    //                Session["UserRole"] = dt.Rows[0][3].ToString();
+
+    //                string sDate = DateTime.Now.Day.ToString().PadLeft(2, '0') + "-" + DateTime.Now.Month.ToString().PadLeft(2, '0') + "-" + DateTime.Now.Year.ToString().PadLeft(4, '0');
+
+    //                if (dt.Rows[0][5].ToString() == dt.Rows[0][6].ToString() || dt.Rows[0][6].ToString() == sDate)
+    //                {
+    //                    Session["LoginStatus"] = "1";
+    //                    MessageBox.Show("Your password is expired", "ChangePassword.aspx");
+    //                }
+    //                else
+    //                {
+    //                    Session["LoginStatus"] = "0";
+    //                    Response.Redirect("HomePage.aspx");
+    //                }
+    //            }
+    //        }
+    //        else
+    //        {
+    //            MessageBox.Show("Invalid Username");
+    //        }
+    //    }
+    //    catch (Exception Ex)
+    //    {
+    //        MessageBox.Show(Ex.Message.ToString());
+    //    }
+    //}
+
+
+    //Adding New Buton for test
+
+
+    protected string HashPassword(string password, string salt)
+    {
+        // Combine the password and salt
+        string combinedPassword = password + salt;
+
+        // Choose the hash algorithm (SHA-256)
+        using (var sha256 = SHA256.Create())
+        {
+            // Convert the combined password string to a byte array
+            byte[] bytes = Encoding.UTF8.GetBytes(combinedPassword);
+
+            // Compute the hash value of the byte array
+            byte[] hash = sha256.ComputeHash(bytes);
+
+            // Convert the byte array to a hexadecimal string
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < hash.Length; i++)
+            {
+                result.Append(hash[i].ToString("x2"));
+            }
+
+            return result.ToString();
+        }
+    }
+
+    protected void txtUserID_TextChanged(object sender, EventArgs e)
+    {
+        BOUserMaintenance UserMast = new BOUserMaintenance();
+        BLUserMaintenance p = new BLUserMaintenance();
+        DataTable dTable = new DataTable();
+        string sMsg = string.Empty;
+        try
+        {
+            UserMast.STAFF_NUM = Convert.ToInt64(txtUserName.Text).ToString();
+            UserMast.ACTION = "S";
+
+            dTable = p.Fetch_User_Mast(UserMast);
+            if (dTable.Rows.Count > 0)
+            {
+            }
+            else
+            {
+                Globals.Show("Invalid User Id or Password...Try again!!!");
+                txtUserName.Focus();
+                return;
+            }
+        }
+        catch (Exception ee)
+        {
+            Globals.Show(ee.Message.ToString());
+        }
+        finally
+        {
+            p = null;
+            UserMast = null;
+            sMsg = null;
+        }
+
+
+    }
+
+    //[WebMethod]
+    //public static string LoginUser(string userId, string hashedPassword, string MisDate)
+    //{
+
+
+    //    Login obj = new Login();
+    //    var loginstatus = obj.Logindtls(userId, hashedPassword, MisDate);
+
+    //    string jsonData = Newtonsoft.Json.JsonConvert.SerializeObject(loginstatus);
+
+    //    return jsonData;
+
+
+    //}
+
+    //private string Logindtls(string userId, string hashedPassword, string MisDate)
+    //{
+    //    BOUserMaintenance UserMast = new BOUserMaintenance();
+    //    BLUserMaintenance p = new BLUserMaintenance();
+    //    DataTable dTable = new DataTable();
+    //    string flagstatus = string.Empty;
+    //    string sMsg = string.Empty;
+
+    //    try
+    //    {
+    //        UserMast.STAFF_NUM = userId;
+    //        UserMast.ACTION = "S";
+    //        dTable = p.Fetch_User_Mast(UserMast);
+
+
+    //        if (dTable.Rows.Count > 0)
+    //        {
+    //            if (Convert.ToString(dTable.Rows[0]["STATUS"]) == "I")
+    //            {
+    //                flagstatus = "I"; // Inactive account
+    //                return flagstatus;
+    //            }
+    //            if (dTable.Rows[0]["LOCK_FLAG"].ToString() == "3")
+    //            {
+    //                flagstatus = "L"; // Locked account
+    //                return flagstatus;
+    //            }
+
+    //            // Password is correct, now check expiration date
+    //            DateTime pwdExprDate = Convert.ToDateTime(dTable.Rows[0]["VALID_TILL"]);
+    //            var sysdt = DateTime.Now;
+    //            //Session["UserId"] = txtUserName.Text;
+    //            //Session["StaffNo"] = txtUserName.Text;
+    //            Session["UserId"] = userId;
+    //            Session["UserName"] = "";
+
+    //            //if (txtMisDate.Text.Length != 10)
+    //            //{
+    //            //    MessageBox.Show("Invalid Quarter-end Date");
+    //            //    txtMisDate.Focus();
+    //            //    //return;
+    //            //}
+
+    //            //string MisDate_Check = txtMisDate.Text.Substring(0, 6);
+    //            //if ((MisDate_Check != "31-03-") && (MisDate_Check != "30-06-") && (MisDate_Check != "30-09-") && (MisDate_Check != "31-12-"))
+    //            //{
+    //            //    MessageBox.Show("Please enter Quarter-end Date");
+    //            //    txtMisDate.Focus();
+    //            //    //return;
+    //            //}
+
+    //            string Mnth = MisDate.Substring(3, 2);
+    //            string Yr = MisDate.Substring(6, 4);
+    //            if (Convert.ToInt16(Yr) < 2014 || Convert.ToInt16(Yr) > DateTime.Now.Year)
+    //            {
+    //                MessageBox.Show("Invalid Year");
+    //                txtMisDate.Focus();
+    //                // return;
+    //            }
+
+
+    //            Session["Mnth_year"] = Mnth + Yr;
+    //            //  Session["MisDate"] = MisDate.Substring(0, 2) + "-" + Common_Func.StrMonth(MisDate.Substring(3, 2)) + "-" + MisDate.Substring(6, 4);
+    //            Session["MisDate1"] = MisDate;
+    //            Session["UserId"] = dTable.Rows[0][0].ToString();
+    //            Session["UserName"] = dTable.Rows[0][1].ToString();
+    //            Session["UserRole"] = dTable.Rows[0][3].ToString();
+
+    //            Session["Password"] = Globals.Decryptdata(dTable.Rows[0]["PSW"].ToString());
+    //            //Session["Pwd"] = txtPassword.Text;
+
+    //            objbo.PwdExprDt = dTable.Rows[0]["VALID_TILL"].ToString();
+    //            objbo.STAFF_NUM = Convert.ToInt64(userId).ToString();
+
+    //            if (pwdExprDate > DateTime.Now)
+    //            {
+
+    //                HttpContext.Current.Session["SALT"] = dTable.Rows[0]["SALT"].ToString();
+    //                HttpContext.Current.Session["Psw"] = hashedPassword;
+    //                HttpContext.Current.Session["SALT_STAT"] = dTable.Rows[0]["SALT_STAT"];
+
+    //                string storedHashedPassword = Convert.ToString(dTable.Rows[0]["PSW"]);
+    //                string storedSalt = dTable.Rows[0]["SALT"].ToString();
+
+    //                string hashedPasswordWithSalt = ComputeSha512Hash(hashedPassword, storedSalt);
+
+    //                HttpContext.Current.Session["StoredPsw"] = Convert.ToString(hashedPasswordWithSalt);
+
+    //                // Redirect to homepage
+    //                HttpContext.Current.Session["UserId"] = userId;
+    //                HttpContext.Current.Session["Pwd"] = hashedPassword;
+    //                HttpContext.Current.Session["Password"] = Globals.Decryptdata(dTable.Rows[0]["PSW"].ToString());
+    //                //return "Success"; // Indicate successful login
+    //                flagstatus = "S";
+    //                if (hashedPasswordWithSalt != storedHashedPassword)
+    //                {
+
+    //                    int MaxAttempts;
+    //                    MaxAttempts = Convert.ToByte(Session["MaxAttempts"]) + 1;
+    //                    Session["MaxAttempts"] = MaxAttempts;
+    //                    if (Convert.ToInt16(ViewState["MaxAttempts"]) < 3)
+    //                    {
+    //                        flagstatus = "F";
+    //                        return flagstatus;
+
+    //                    }
+    //                    else if (MaxAttempts.ToString() == "3")
+    //                    {
+    //                        UserMast.STAFF_NUM = Convert.ToString(userId);
+    //                        UserMast.ACTION = "L";
+    //                        UserMast.UpdtBy = userId;
+    //                        sMsg = p.UpdateUserMast(UserMast);
+    //                        flagstatus = "M";  //Maxmum attempts done with wrong password
+    //                        return flagstatus;
+    //                    }
+    //                }
+    //                else if (hashedPasswordWithSalt == storedHashedPassword)
+    //                {
+    //                    HttpContext.Current.Session["UserId"] = userId;
+    //                    HttpContext.Current.Session["Pwd"] = hashedPassword;
+    //                    HttpContext.Current.Session["Password"] = Globals.Decryptdata(dTable.Rows[0]["PSW"].ToString());
+
+    //                    flagstatus = "S";
+
+
+    //                    //HttpContext.Current.Response.Redirect("~/HomePage.aspx");
+    //                }
+
+
+
+    //                //if (hashedPasswordWithSalt != storedHashedPassword)
+    //                //{
+    //                //    flagstatus = "Invalid"; // Invalid password
+    //                //    return flagstatus;
+    //                //}
+
+
+    //            }
+    //            else
+    //            {
+    //                // Password expired, return status for change password
+    //                //return "ChangePassword";
+    //                flagstatus = "C";
+    //                return flagstatus;
+    //            }
+    //        }
+
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        // Log exception
+    //        flagstatus = "Error";
+    //        // You might also want to handle the exception here, log it or display an error message
+    //    }
+
+    //    return flagstatus;
+    //}
+
+
+
+    public class Globals
+    {
+        public Globals()
+        {
+            //
+            // TODO: Add constructor logic here
+            //
+        }
+
+        /// Function is used to encrypt the password
+        public static string Encryptdata(string password)
+        {
+            string strmsg = string.Empty;
+            byte[] encode = new byte[password.Length];
+            encode = System.Text.Encoding.UTF8.GetBytes(password);
+            strmsg = Convert.ToBase64String(encode);
+            return strmsg;
+        }
+
+        /// Function is used to Decrypt the password
+        public static string Decryptdata(string encryptpwd)
+        {
+            string decryptpwd = string.Empty;
+            UTF8Encoding encodepwd = new System.Text.UTF8Encoding();
+            Decoder Decode = encodepwd.GetDecoder();
+            byte[] todecode_byte = Convert.FromBase64String(encryptpwd);
+            int charCount = Decode.GetCharCount(todecode_byte, 0, todecode_byte.Length);
+            char[] decoded_char = new char[charCount];
+            Decode.GetChars(todecode_byte, 0, todecode_byte.Length, decoded_char, 0);
+            decryptpwd = new String(decoded_char);
+            return decryptpwd;
+        }
+
+        //static public DialogResult Show(string message)
+        //{
+        //    return Show(message, string.Empty, MessageBoxButtons.OK);
+        //}
+
+        //static public DialogResult Show(string message, string title)
+        //{
+        //    return Show(message, title, MessageBoxButtons.OK);
+        //}
+
+        //static public DialogResult Show(string message, string title, MessageBoxButtons buttons)
+        //{
+        //    // Create a host form that is a TopMost window which will be the 
+        //    // parent of the MessageBox.
+        //    Form topmostForm = new Form();
+        //    // We do not want anyone to see this window so position it off the 
+        //    // visible screen and make it as small as possible
+        //    topmostForm.Size = new System.Drawing.Size(1, 1);
+        //    topmostForm.StartPosition = FormStartPosition.Manual;
+        //    System.Drawing.Rectangle rect = SystemInformation.VirtualScreen;
+        //    topmostForm.Location = new System.Drawing.Point(rect.Bottom + 10,
+        //        rect.Right + 10);
+        //    topmostForm.Show();
+        //    // Make this form the active form and make it TopMost
+        //    topmostForm.Focus();
+        //    topmostForm.BringToFront();
+        //    topmostForm.TopMost = true;
+        //    // Finally show the MessageBox with the form just created as its owner
+        //    DialogResult result = MessageBox.Show(topmostForm, message, title, buttons);
+        //    topmostForm.Dispose(); // clean it up all the way
+        //    return result;
+        //}
+
+        //public static void Show(string message)
+        //{
+        //    string cleanMessage = message.Replace("'", "\'");
+        //    Page page = HttpContext.Current.CurrentHandler as Page;
+        //    string script = string.Format("alert('{0}');", cleanMessage);
+        //    if (page != null && !page.ClientScript.IsClientScriptBlockRegistered("alert"))
+        //    {
+        //        page.ClientScript.RegisterClientScriptBlock(page.GetType(), "alert", script, true /* addScriptTags */);
+        //    }
+        //}
+        public static void Show(string message)
+        {
+            //string cleanMessage = message.Replace("'", "\'");
+            //Page page = HttpContext.Current.CurrentHandler as Page;
+            //string script = string.Format("alert('{0}');", cleanMessage);
+            //if (page != null && !page.ClientScript.IsClientScriptBlockRegistered("alert"))
+            //{
+            //    page.ClientScript.RegisterClientScriptBlock(page.GetType(), "alert", script, true /* addScriptTags */);
+            //}
+
+
+            Page page = HttpContext.Current.Handler as Page;
+            message = message.Replace("\n", " ").Replace("\t", " ").Replace("\r", " ").Replace("\\", "").Replace("'", "`");
+            ScriptManager.RegisterClientScriptBlock(page, typeof(Page), "ClientScript", "alert('" + message + "')", true);
+        }
+        //public static void Show(string msg)
+        //{
+        //    Page page = HttpContext.Current.Handler as Page;
+        //    msg = msg.Replace("\n", "").Replace("\t", "").Replace("\r", "").Replace("\\", "").Replace("'", "`");
+        //    ScriptManager.RegisterClientScriptBlock(page, typeof(Page), "ClientScript", "alert('" + msg + "')", true);
+        //}
+
+        public static void Show(string msg, string cls)
+        {
+            Page page = HttpContext.Current.Handler as Page;
+            msg = msg.Replace("\n", "").
+            Replace("\t", "").Replace("\r", "").Replace("\\", "").Replace("'", "`");
+            ScriptManager.RegisterClientScriptBlock(page, typeof(Page), "ClientScript", "alert('" + msg + "');window.opener.document.forms[0].submit();window.close();", true);
+        }
+
+        public static String ConvertDate(string sDate)
+        {
+            Boolean valid;
+            DateTime dt;
+            valid = DateTime.TryParseExact(sDate, "dd-mm-yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out dt);
+            if (!valid)
+                return "";
+            else
+            {
+                string dd = sDate.Substring(0, 2);
+                string mm = sDate.Substring(3, 2);
+                string yy = sDate.Substring(6, 4);
+                Byte bMonth = Convert.ToByte(mm);
+                string sResult = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
+                return dd + '-' + sResult.Substring((bMonth - 1) * 3, 3) + '-' + yy;
+            }
+        }
+
+
+    }
+
+
+
+    private string ComputeSha512Hash(string rawData, string salt)
+    {
+        byte[] saltBytes = Convert.FromBase64String(salt);
+        byte[] rawDataBytes = Encoding.UTF8.GetBytes(rawData);
+
+        byte[] combinedBytes = new byte[saltBytes.Length + rawDataBytes.Length];
+        Array.Copy(saltBytes, 0, combinedBytes, 0, saltBytes.Length);
+        Array.Copy(rawDataBytes, 0, combinedBytes, saltBytes.Length, rawDataBytes.Length);
+
+        using (SHA512 sha512Hash = SHA512.Create())
+        {
+            // ComputeHash - returns byte array
+            byte[] hashedBytes = sha512Hash.ComputeHash(combinedBytes);
+
+            // Convert byte array to a string
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < hashedBytes.Length; i++)
+            {
+                builder.Append(hashedBytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
+    }
+
+    private void ShowPopup(string message)
+    {
+        string script = "alert('" + message + "');";
+        ScriptManager.RegisterStartupScript(this, GetType(), "ShowPopup", script, true);
+    }
+
+    protected void btnLogin_Click(object sender, EventArgs e)
+    {
+        BOUserMaintenance UserMast = new BOUserMaintenance();
+        BLUserMaintenance p = new BLUserMaintenance();
+        DataTable dTable = new DataTable();
+        string flagstatus = string.Empty;
+        string sMsg = string.Empty;
+
+        try
+        {
+            UserMast.STAFF_NUM = txtUserName.Text;
+            UserMast.ACTION = "S";
+            dTable = p.Fetch_User_Mast(UserMast);
+
+
+            if (dTable.Rows.Count > 0)
+            {
+                if (Convert.ToString(dTable.Rows[0]["STATUS"]) == "I")
+                {
+                    Globals.Show("User is Inactive... Contact Admin!!!");
+
+                }
+                if (dTable.Rows[0]["LOCK_FLAG"].ToString() == "3")
+                {
+                    Globals.Show("User is Locked!!");
+
+                }
+
+
+               
+
+                Session["UserId"] = txtUserName.Text;
+                Session["UserName"] = "";
+
+
+                string Mnth = txtMisDate.Text.Substring(3, 2);
+                string Yr = txtMisDate.Text.Substring(6, 4);
+                if (Convert.ToInt16(Yr) < 2014 || Convert.ToInt16(Yr) > DateTime.Now.Year)
+                {
+                    MessageBox.Show("Invalid Year");
+                    txtMisDate.Focus();
+
+                }
+
+                string hashedPassword;
+                hashedPassword = txtPassword.Text;
+
+                HttpContext.Current.Session["SALT"] = dTable.Rows[0]["SALT"].ToString();
+                HttpContext.Current.Session["Psw"] = txtPassword.Text.ToLower();
+                HttpContext.Current.Session["SALT_STAT"] = dTable.Rows[0]["SALT_STAT"];
+
+                if (txtMisDate.Text.Length != 10)
+                {
+                    MessageBox.Show("Invalid Quarter-end Date");
+                    txtMisDate.Focus();
+                    
+                }
+
+                string MisDate_Check = txtMisDate.Text.Substring(0, 6);
+                if ((MisDate_Check != "31-03-") && (MisDate_Check != "30-06-") && (MisDate_Check != "30-09-") && (MisDate_Check != "31-12-"))
+                {
+                    MessageBox.Show("Please enter Quarter-end Date");
+                    txtMisDate.Focus();
+                   
+                }
+
+                Session["Mnth_year"] = Mnth + Yr;
+                Session["MisDate"] = txtMisDate.Text.Substring(0, 2) + "-" + Common_Func.StrMonth(txtMisDate.Text.Substring(3, 2)) + "-" + txtMisDate.Text.Substring(6, 4);
+                Session["MisDate1"] = txtMisDate.Text;
+               
+               
+                string a;
+                string storedHashedPassword;
+
+                if (dTable.Rows[0]["Psw"].ToString().Length != 128)
+                    Session["Password"] = Globals.Decryptdata(dTable.Rows[0]["Psw"].ToString());
+                
+
+                if (dTable.Rows[0]["Psw"].ToString().Length == 128)
+                    storedHashedPassword = Convert.ToString(dTable.Rows[0]["Psw"]);
+                else
+                    storedHashedPassword = Convert.ToString(dTable.Rows[0]["Psw"]);
+                if (storedHashedPassword == "")
+                    storedHashedPassword = ComputeSha512Hash(hashedPassword, "");
+
+
+                string storedSalt = dTable.Rows[0]["SALT"].ToString();
+                string hashedPasswordWithSalt = ComputeSha512Hash(hashedPassword, storedSalt);
+
+                HttpContext.Current.Session["StoredPsw"] = Convert.ToString(hashedPasswordWithSalt);
+
+                Session["UserID"] = txtUserName.Text;
+
+                Session["RoleID"] = dTable.Rows[0]["USER_ROLE"].ToString();
+
+
+                UserMast.PwdExprDt = dTable.Rows[0]["VALID_TILL"].ToString();
+                if (hashedPasswordWithSalt != storedHashedPassword)
+                {
+                    ShowPopup("Invalid UserName/Password...Try again!!!");
+                    return;
+                }
+                var sysdt = DateTime.Now;
+                var exprdt = Convert.ToDateTime(UserMast.PwdExprDt);
+                if (exprdt > sysdt)
+                {
+                    if (hashedPasswordWithSalt != storedHashedPassword)
+                    {
+                        ViewState["MaxAttempts"] = Convert.ToByte(ViewState["MaxAttempts"]) + 1;
+
+                        if (Convert.ToInt32(ViewState["MaxAttempts"]) < 3)
+                        {
+                            Globals.Show("Invalid Password...Try again!!!");
+                            Response.Redirect("Login.aspx");
+
+                        }
+                        else if (ViewState["MaxAttempts"].ToString() == "3")
+                        {
+                            DataTable dTAudit = new DataTable();
+                            dTAudit = p.Fetch_User_Mast(UserMast);
+                            Session["VauditId"] = Convert.ToInt32(dTAudit.Rows[0]["AAT_AASAUDITID"]);
+                            UserMast.STAFF_NUM = Convert.ToString(txtUserName.Text);
+                            UserMast.UpdtDt = sysdt.ToString("yyyyMMdd");
+                            UserMast.ACTION = "L";
+                            UserMast.UpdtBy = txtUserName.Text;
+                            string smsg = p.UpdateUserMast(UserMast);
+                            if (smsg == "0")
+                                Globals.Show("User is Locked due to maximim attempts with wrong password!!");
+                            Response.Redirect("Login.aspx");
+                        }
+
+
+                    }
+
+                   
+                    
+                    else  if (hashedPasswordWithSalt == storedHashedPassword)
+                      {
+                        UserMast.STAFF_NUM = Convert.ToString(txtUserName.Text);
+                        DataTable dTableLog = p.Fetch_User_Mast(UserMast);
+                        Response.Redirect("HomePage.aspx");
+
+                      }
+                }
+                else
+                {
+
+                    Response.Redirect("ChangeNewPassword.aspx");
+
+
+                }
+
+
+                Response.Redirect("Login.aspx");
+
+            }
+            else
+            {
+                Globals.Show("Invalid User Id...Try again!!!");
+                txtUserName.Focus();
+                Response.Redirect("Login.aspx");
+
+            }
+
+
+        }
+        catch (Exception ee)
+        {
+
+            Globals.Show(ee.Message.ToString());
+
+
+        }
+        finally
+        {
+            p = null;
+            UserMast = null;
+            sMsg = null;
+        }
+
+
+    }
+
+
+}
+
+=============================================================================================================================================================================
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Login.aspx.cs" Inherits="Login" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head runat="server">
+    <title>Login Page</title>
+    <link href="App_Themes/DRP_Theme/StyleSheet.css" rel="stylesheet" type="text/css"/>
+    <%--<script src="JScript.js" type="text/jscript"></script>--%>
+    <%--<script src="js/jquery.min.js"></script>--%>
+      <script src="lib/jquery/jquery.min.js"></script>
+</head>
+<body  bgcolor="#CCCCCC"> 
+    <form id="form1" runat="server"> 
+    <div id="container">
+        <div id="header">            
+            <div id="header1">
+                <table>
+                    <tr>
+                        <td style="width: 100px; height: 75px" valign="top" align="left">
+                    <asp:Image ID="Image1" runat="server" ImageUrl="~/App_Themes/DRP_Theme/images/CanaraBank.png" Height="28px" Width="217px"/></td>
+                        <td align="center" style="width: 668px; height: 75px" valign="middle">
+                    <asp:Label ID="Label2" runat="server" Text="DEBT RESTRUCTURING PACKAGE" Font-Bold="True" ForeColor="#804040" Height="25px" Font-Size="X-Large" Width="447px" Font-Names="Comic Sans MS"></asp:Label>
+                            <br />
+                            <asp:Label ID="Label3" runat="server" Font-Bold="True" ForeColor="#804040" Text="[ version 3.1 ]" Font-Names="Comic Sans MS"></asp:Label></td>
+                        <td align="right" style="width: 440px; height: 75px" valign="top">
+                    <asp:Label ID="lblDate" runat="server" Width="153px" style="margin-top: 5px" Font-Size="Smaller" Height="31px" /></td>
+                    </tr>
+                </table>
+                                                                                    
+            </div>
+          </div>                
+        <div id="content">
+            <div class="PageContent">
+            <br />
+            <center>
+                &nbsp;
+                <table id="psw-rounded-corner" summary="Log In" align="center" >
+                    <thead>
+    	                <tr>
+        	                <th scope="col" class="psw-rounded-header-left" style="width: 22px"></th>
+                            <th scope="col" colspan="2" align="center">
+                                &nbsp;
+                                <asp:Label id="Label1" runat="server" Text="Login" CssClass="PageTitle1"></asp:Label></th>
+                            <th scope="col">
+                            </th>
+                            <th scope="col" class="psw-rounded-header-right" style="width: 71px"></th>
+                        </tr>
+                     </thead>
+                        <tfoot>
+    	                <tr>
+        	                <td  class="psw-rounded-foot-left" style="width: 22px;"></td>
+                            <td align="center" colspan="3">
+                                <%--<asp:Button ID="btnLogin" runat="server" Text="Log In" OnClick="btnLogin_Click" />--%>
+                               <%-- <asp:ImageButton id="ImgBtnLogin" onclick="ImgBtnLogin_Click" runat="server" ImageUrl="~/App_Themes/DRP_Theme/images/Login.gif" ValidationGroup="Grp1"></asp:ImageButton>--%>
+                                <asp:Button ID="btnLogin" runat="server" BackColor="#1589FF"  Text="Login" Width="80px" onclick="btnLogin_Click" />
+                                </td>
+        	                <td class="psw-rounded-foot-right" style="height: 22px; width: 71px;"></td>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        <tr>
+                            <td style="width: 22px; height: 1px;" ></td>                        
+                            <td align="left" style="width: 120px; height: 1px" >
+                                <asp:Label ID="lblUserName" runat="server" Text="Staff Number" Width="105px"></asp:Label></td>
+                            <td rowspan="" style="height: 1px">
+                                <asp:TextBox ID="txtUserName" runat="server" MaxLength="6" Width="95px" SkinID="txtLogin"  ></asp:TextBox>&nbsp;
+                            </td>
+                            <td rowspan="" style="height: 1px">
+                            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ErrorMessage="Enter user name" ControlToValidate="txtUserName" ValidationGroup="Grp1">*</asp:RequiredFieldValidator>
+                            </td>
+                            <td style="height: 1px" ></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 22px"></td>
+                            <td align="left" style="width: 120px">
+                                <asp:Label ID="lblPassword" runat="server" Text="Password" Width="76px"></asp:Label></td>
+                            <td >
+                                <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" SkinID="txtLogin" MaxLength="15" Width="93px"></asp:TextBox>
+                            </td>
+                            <td >
+                            <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ErrorMessage="Enter password" ControlToValidate="txtPassword" ValidationGroup="Grp1">*</asp:RequiredFieldValidator>
+                                </td>
+                            <td ></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 22px" >
+                            </td>
+                            <td align="left" style="width: 120px">
+                                <asp:Label ID="lblQrtrEndDate" runat="server"  Text="Quarter-end Date(dd-mm-yyyy)"
+                                    Width="123px"></asp:Label></td>
+                            <td>
+                                <asp:TextBox ID="txtMisDate" runat="server" MaxLength="10" Width="95px" AutoCompleteType="Disabled" ></asp:TextBox></td>
+                            <td>
+                            <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ErrorMessage="Enter Quarter End Date" ControlToValidate="txtMisDate" ValidationGroup="Grp1">*</asp:RequiredFieldValidator>
+                            </td>
+                            <td style="width: 71px;">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" ShowMessageBox="True"
+                    ShowSummary="False" ValidationGroup="Grp1" />
+            </center>
+            </div>                            
+        </div>
+        <div id="footer"></div>
+    </div>
+    </form>
+</body>
+</html>   
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<script type="text/javascript"> 
+
+    function GeneratePwd() {
+        if (document.getElementById("txtPassword").value != "") {
+            document.getElementById("txtPassword").value = CryptoJS.SHA512(document.getElementById("txtPassword").value).toString();
+        }
+    }
+
+    <%--function Login() {
+        debugger;
+        var userId = document.getElementById('<%= txtUserName.ClientID %>').value;
+        var password = document.getElementById('<%= txtPassword.ClientID %>').value;
+        var MisDate = document.getElementById('<%= txtMisDate.ClientID %>').value;
+    //var currentMaxAttempts = <%= Session["MaxAttempts"] %>;
+
+        var hashedPassword = CryptoJS.SHA512(password).toString();
+
+        $.ajax({
+            url: "Login.aspx/LoginUser",
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: "{'userId': '" + userId + "','hashedPassword': '" + hashedPassword + "','MisDate': '" + MisDate + "'}",
+            success: function (response) {
+                var data = JSON.parse(response.d);
+
+                alert(data);
+
+                if (data === "S") {
+                    window.location.href = "./HomePage.aspx";
+                }
+                else if (data === "I") {
+                    alert("User is Inactive...Contact Admin!!!");
+                }
+                else if (data === "L") {
+                    alert("User is Locked!!");
+                }
+                else if (data === "M") {
+                    alert("User is Locked due to maximim attempts with wrong password!!");
+                }
+                else if (data === "F") {
+                    alert("Invalid UserId or Password!!");
+                }
+                else if (data === "U") {
+                    alert("Invalid UserId or Password!!");
+                }
+                else if (data === "A") {
+                    alert("You have not been assigned any Audit Id for doing Audit...!!!");
+                }
+                else if (data === "C") {
+                    window.location.href = "./ChangeNewPassword.aspx";
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log("Error: " + errorThrown)  //Error handlers
+                alert(errorThrown);
+            }
+        });
+    }--%>
+</script>
+
+============================================================================================================================================================================
+LOGIN BL CLASS
+---------------
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Data;
+using DALayer;
+using BO;
+
+namespace BL
+{
+    public class BLUserMaintenance
+    {
+        public DataTable Fetch_User_Mast(BOUserMaintenance UserMst)
+        {
+            DAUserMaintenance objda = new DAUserMaintenance();
+            return objda.Fetch_User_Mast(UserMst);
+        }
+
+        public Byte Update_Insert_User_Mast(BOUserMaintenance UserMst)
+        {
+            DAUserMaintenance objda = new DAUserMaintenance();
+            try
+            {
+                return objda.Update_Insert_User_Mast(UserMst);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                objda = null;
+            }
+        }
+
+        public string UpdateUserMast(BOUserMaintenance UserMast)
+        {
+            DAUserMaintenance pDA = new DAUserMaintenance();
+            try
+            {
+                return pDA.Update_User_Mast(UserMast);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                pDA = null;
+            }
+        }
+    }
+}
+==============================================================================================================================================
+LOGIN DA
+-------
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Data;
+using System.Data.OracleClient;
+using System.Configuration;
+using BO;
+using System.Data.SqlClient;
+using System.Security.Cryptography;
+
+namespace DALayer
+{
+    public class DAUserMaintenance
+    {
+        string connStr = ConfigurationManager.ConnectionStrings["conString"].ToString();
+
+        public DAUserMaintenance()
+        {
+        }
+
+        public DataTable Fetch_User_Mast(BOUserMaintenance UserMst)
+        {
+
+            OracleConnection conn = new OracleConnection(connStr);
+            conn.Open();
+            OracleDataAdapter dAd = new OracleDataAdapter("DRP_USERMAST_FETCH", conn);
+            dAd.SelectCommand.CommandType = CommandType.StoredProcedure;
+            dAd.SelectCommand.Parameters.Add("v_Staff_num", OracleType.Char).Value = UserMst.STAFF_NUM;
+            dAd.SelectCommand.Parameters.Add("v_Action", OracleType.Char).Value = UserMst.ACTION;
+
+
+            dAd.SelectCommand.Parameters.Add("v_Cur", OracleType.Cursor).Direction = ParameterDirection.Output;
+            DataTable dt = new DataTable();
+            try
+            {
+                dAd.Fill(dt);
+                return dt;
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                dt.Dispose();
+                dAd.Dispose();
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+
+        public Byte Update_Insert_User_Mast(BOUserMaintenance UserMst)
+        {
+            OracleConnection conn = new OracleConnection(connStr);
+            conn.Open();
+            OracleCommand dCmd = new OracleCommand("DRP_UserMast_Update", conn);
+            dCmd.CommandType = CommandType.StoredProcedure;
+            dCmd.Parameters.Add("v_Staff_num", OracleType.VarChar).Value = UserMst.STAFF_NUM;
+            dCmd.Parameters.Add("v_Staff_name", OracleType.VarChar).Value = UserMst.STAFF_NAME;
+            dCmd.Parameters.Add("v_Psw", OracleType.VarChar).Value = UserMst.PSW;
+            dCmd.Parameters.Add("v_SALT", OracleType.VarChar).Value = UserMst.SALT;
+            dCmd.Parameters.Add("v_User_role", OracleType.VarChar).Value = UserMst.USER_ROLE;
+            dCmd.Parameters.Add("v_Lock_Flag", OracleType.VarChar).Value = UserMst.LOCK_FLAG;
+            dCmd.Parameters.Add("v_Action", OracleType.Char).Value = UserMst.ACTION;
+            dCmd.Parameters.Add("v_CreatedID", OracleType.Int32).Value = UserMst.CreationID;
+
+            dCmd.Parameters.Add("v_Result", OracleType.Number).Direction = ParameterDirection.Output;
+            try
+            {
+                dCmd.ExecuteNonQuery();
+                return Convert.ToByte(dCmd.Parameters["v_Result"].Value);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                dCmd.Dispose();
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+        public string Update_User_Mast(BOUserMaintenance UserMst)
+        {
+            OracleConnection conn = new OracleConnection(connStr);
+            conn.Open();
+            OracleCommand dCmd = new OracleCommand("DRP_UserMast_Update", conn);
+            dCmd.CommandType = CommandType.StoredProcedure;
+            dCmd.Parameters.Add("v_Staff_num", OracleType.VarChar).Value = UserMst.STAFF_NUM;
+            dCmd.Parameters.Add("v_Staff_name", OracleType.VarChar).Value = UserMst.STAFF_NAME;
+            dCmd.Parameters.Add("v_Psw", OracleType.VarChar).Value = UserMst.PSW;
+            dCmd.Parameters.Add("v_SALT", OracleType.VarChar).Value = UserMst.SALT;
+            dCmd.Parameters.Add("v_User_role", OracleType.VarChar).Value = UserMst.USER_ROLE;
+            dCmd.Parameters.Add("v_Lock_Flag", OracleType.VarChar).Value = UserMst.LOCK_FLAG;
+            dCmd.Parameters.Add("v_Action", OracleType.Char).Value = UserMst.ACTION;
+            // dCmd.Parameters.Add("v_CreatedID", OracleType.Int32).Value = UserMst.CreationID;
+
+            dCmd.Parameters.Add("v_Result", OracleType.Number).Direction = ParameterDirection.Output;
+            try
+            {
+                dCmd.ExecuteNonQuery();
+                //return Convert.ToByte(dCmd.Parameters["v_Result"].Value);
+                return Convert.ToString(dCmd.Parameters["v_Result"].Value);
+            }
+            catch (Exception error)
+            {
+                Console.WriteLine(error.Message);
+                throw;
+            }
+            finally
+            {
+                dCmd.Dispose();
+                conn.Close();
+                conn.Dispose();
+            }
+        }
+        public BOUserMaintenance GetUserDetails(string userId)
+        {
+            BOUserMaintenance user = null;
+
+            using (OracleConnection conn = new OracleConnection(connStr))
+            {
+                conn.Open();
+                using (OracleCommand cmd = new OracleCommand("DRP_USERMAST_FETCH", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("v_Staff_num", OracleType.VarChar).Value = userId;
+                    cmd.Parameters.Add("v_Action", OracleType.VarChar).Value = "P"; // Assuming 'P' fetches full details
+                    cmd.Parameters.Add("v_Cur", OracleType.Cursor).Direction = ParameterDirection.Output;
+
+                    using (OracleDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            user = new BOUserMaintenance
+                            {
+                                STAFF_NUM = reader["STAFF_NUM"].ToString(),
+                                PSW = reader["PSW"].ToString(),
+                                SALT = reader["SALT"].ToString()
+                            };
+                        }
+                    }
+                }
+            }
+
+            return user;
+        }
+        public bool VerifyOldPassword(int Staff_Num, string password)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    con.Open();
+                    string query = "SELECT Password, Salt FROM Users WHERE Staff_Num = @Staff_Num";
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@Email", Staff_Num);
+                        SqlDataReader reader = cmd.ExecuteReader();
+                        if (reader.Read())
+                        {
+                            string storedPasswordHash = reader["Password"].ToString();
+                            string storedSalt = reader["Salt"].ToString();
+
+                            // Hash input password with stored salt
+                            string hashedPassword = HashPassword(password, storedSalt);
+
+                            // Compare hashed passwords
+                            if (hashedPassword == storedPasswordHash)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+
+                return false;
+            }
+        }
+        public string GenerateSalt()
+        {
+            // Generate a random salt (you can use a cryptographically secure random number generator)
+            // For simplicity, we are using a simple random string generator here
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            var saltChars = new char[16];
+            for (int i = 0; i < saltChars.Length; i++)
+            {
+                saltChars[i] = chars[random.Next(chars.Length)];
+            }
+            return new string(saltChars);
+        }
+        public string HashPassword(string password, string salt)
+        {
+            // Combine the password and salt
+            string combinedPassword = password + salt;
+
+            // Choose the hash algorithm (SHA-256 or SHA-512)
+            using (var sha256 = SHA256.Create())
+            {
+                // Convert the combined password string to a byte array
+                byte[] bytes = Encoding.UTF8.GetBytes(combinedPassword);
+
+                // Compute the hash value of the byte array
+                byte[] hash = sha256.ComputeHash(bytes);
+
+                // Convert the byte array to a hexadecimal string
+                StringBuilder result = new StringBuilder();
+                for (int i = 0; i < hash.Length; i++)
+                {
+                    result.Append(hash[i].ToString("x2"));
+                }
+
+                return result.ToString();
+            }
+        }
+        public bool UpdatePasswordInDatabase(string Staff_Num, string newPasswordHash, string newSalt)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    con.Open();
+                    string query = "UPDATE User_Mast SET PSW = @Password, SALT = @Salt WHERE STAFF_NUM = @Staff_Num";
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@Password", newPasswordHash);
+                        cmd.Parameters.AddWithValue("@Salt", newSalt);
+                        cmd.Parameters.AddWithValue("@Staff_Num", Staff_Num);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log, display error, etc.)
+                //Response.Write("Error updating password.");
+                return false;
+            }
+        }
+        public DataTable FetchUser(int staffNum, string PSW)
+        {
+            DataTable dataTable = new DataTable();
+
+            using (SqlConnection connection = new SqlConnection(connStr))
+            {
+                using (SqlCommand command = new SqlCommand("FETCHUSER", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@STAFF_NUM", staffNum);//@PSW
+                    command.Parameters.AddWithValue("@PSW", PSW);
+
+                    using (SqlDataAdapter dataAdapter = new SqlDataAdapter(command))
+                    {
+                        dataAdapter.Fill(dataTable);
+                    }
+                }
+            }
+
+            return dataTable;
+        }
+        //public string HashPassword(string password, string salt)
+        //{
+        //    using (SHA256 sha256 = SHA256.Create())
+        //    {
+        //        byte[] bytes = Encoding.UTF8.GetBytes(password + salt);
+        //        byte[] hash = sha256.ComputeHash(bytes);
+        //        return Convert.ToBase64String(hash);
+        //    }
+        //}
+
+        public DateTime? GetValidTillDate(string staffNum)
+        {
+            string query = "SELECT Valid_Till FROM User_Mast WHERE Staff_Num = :Staff_Num";
+
+            using (OracleConnection connection = new OracleConnection(connStr))
+            {
+                using (OracleCommand command = new OracleCommand(query, connection))
+                {
+                    command.Parameters.Add(new OracleParameter(":Staff_Num", staffNum));
+
+                    connection.Open();
+                    using (OracleDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            DateTime validTill = reader.GetDateTime(reader.GetOrdinal("Valid_Till"));
+                            return validTill;
+                        }
+                        else
+                        {
+                            return null; // No user found
+                        }
+                    }
+                }
+            }
+        }
+        public PasswordAndSalt GetPasswordAndSalt(string staffNum)
+        {
+            string query = "SELECT PSW, SALT FROM User_Mast WHERE STAFF_NUM = @Staff_Num";
+
+            using (SqlConnection connection = new SqlConnection(connStr))
+            {
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Staff_Num", staffNum);
+
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        string hashedPassword = reader["PSW"].ToString();
+                        string salt = reader["Salt"].ToString();
+                        reader.Close();
+                        return new PasswordAndSalt { HashedPassword = hashedPassword, Salt = salt };
+                    }
+                    else
+                    {
+                        reader.Close();
+                        return null; // No user found
+                    }
+                }
+            }
+        }
+        //public (string hashedPassword, string salt) GetPasswordAndSalt(int staffNum)
+        //{
+        //    string query = "SELECT PSW, Salt FROM User_Mast WHERE Staff_Num = @Staff_Num";
+
+        //    using (SqlConnection connection = new SqlConnection(connStr))
+        //    {
+        //        using (SqlCommand command = new SqlCommand(query, connection))
+        //        {
+        //            command.Parameters.AddWithValue("@Staff_Num", staffNum);
+
+        //            connection.Open();
+        //            SqlDataReader reader = command.ExecuteReader();
+
+        //            if (reader.Read())
+        //            {
+        //                string hashedPassword = reader["PSW"].ToString();
+        //                string salt = reader["Salt"].ToString();
+        //                reader.Close();
+        //                return (hashedPassword, salt);
+        //            }
+        //            else
+        //            {
+        //                reader.Close();
+        //                return (null, null); // No user found
+        //            }
+        //        }
+        //    }
+        //}
+
+
+
+
+
+    }
+}
+public class PasswordAndSalt
+{
+    public string HashedPassword { get; set; }
+    public string Salt { get; set; }
+}
+
+
+
+
+
+================================================================================================================================================================================
+
+CHANGE-PASSWORD TEMPLATE
+---------------------------
+
+using BL;
+using BO;
+using DALayer;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class ChangeNewPassword : System.Web.UI.Page
+{
+    BLUserMaintenance objbl = new BLUserMaintenance();
+    BOUserMaintenance objbo = new BOUserMaintenance();
+    BLPswHist PassBl = new BLPswHist();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["UserID"] == null)
+        {
+            Response.Write(".NET session has Expired");
+            Response.End();
+        }
+    }
+
+    private string ComputeSha512Hash_Nosalt(string rawData)
+    {
+        using (SHA512 sha512Hash = SHA512.Create())
+        {
+            // ComputeHash - returns byte array
+            byte[] bytes = sha512Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+
+            // Convert byte array to a string   
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
+    }
+    private string ComputeSha512Hash(string rawData, string salt)
+    {
+
+        byte[] saltBytes = Convert.FromBase64String(salt);
+        byte[] rawDataBytes = Encoding.UTF8.GetBytes(rawData);
+
+        byte[] combinedBytes = new byte[saltBytes.Length + rawDataBytes.Length];
+        Array.Copy(saltBytes, 0, combinedBytes, 0, saltBytes.Length);
+        Array.Copy(rawDataBytes, 0, combinedBytes, saltBytes.Length, rawDataBytes.Length);
+
+        using (SHA512 sha512Hash = SHA512.Create())
+        {
+            // ComputeHash - returns byte array
+            byte[] hashedBytes = sha512Hash.ComputeHash(combinedBytes);
+
+            // Convert byte array to a string
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < hashedBytes.Length; i++)
+            {
+                builder.Append(hashedBytes[i].ToString("x2"));
+            }
+            return builder.ToString();
+        }
+    }
+    private string GenerateSalt(int length)
+    {
+        var rng = new RNGCryptoServiceProvider();
+        byte[] saltBytes = new byte[length];
+        rng.GetBytes(saltBytes);
+        return Convert.ToBase64String(saltBytes);
+    }
+    protected void ImgBtnSave_Click(object sender, ImageClickEventArgs e)
+    {
+        BOUserMaintenance objbo = new BOUserMaintenance();
+        BLUserMaintenance objbl = new BLUserMaintenance();
+        DataTable dTable = new DataTable();
+        string Newsalt = GenerateSalt(16);
+        string sMsg = string.Empty;
+        string oldpassword = ComputeSha512Hash(txtPassword.Text, Newsalt);
+        string newpassword = ComputeSha512Hash(txtNewPass.Text, Newsalt);
+        string confirmedpassword = ComputeSha512Hash(txtConfrmPass.Text, Newsalt);
+
+        if (oldpassword == newpassword)
+        {
+            Global.Show("Old password and New Password are same...Try again!!!");
+            txtNewPass.Text = "";
+            txtNewPass.Focus();
+            return;
+        }
+
+        if (txtNewPass.Text == "" || newpassword != confirmedpassword)
+        {
+            Global.Show("New Psw is empty or not same as Confirm Psw...Try again!!!");
+            txtNewPass.Text = "";
+            txtNewPass.Focus();
+            return;
+        }
+
+
+
+
+        try
+        {
+
+            string password = ComputeSha512Hash_Nosalt(txtNewPass.Text);
+            string hashedPassword = ComputeSha512Hash(password, Newsalt);
+            objbo.PSW = hashedPassword;
+            
+            objbo.CreationID = Session["UserId"].ToString();
+            objbo.ACTION = "Z";
+            objbo.SALT = Newsalt;
+            objbo.STAFF_NUM = Convert.ToInt32(Session["UserId"]).ToString();
+
+            sMsg = objbl.UpdateUserMast(objbo);
+            Global.Show(sMsg, "Login.aspx", "");
+
+
+
+        }
+        catch (Exception ee)
+        {
+            Global.Show(ee.Message.ToString());
+        }
+        finally
+        {
+
+           
+            objbo = null;
+            sMsg = null;
+        }
+
+
+
+
+
+
+    }
+    protected void ImgBtnBack_Click(object sender, ImageClickEventArgs e)
+    {
+        Response.Redirect("HomePage.aspx");
+    }
+}
+
+public class Global
+{
+    /// Function is used to encrypt the password
+    public static string Encryptdata(string password)
+    {
+        string strmsg = string.Empty;
+        byte[] encode = new byte[password.Length];
+        encode = System.Text.Encoding.UTF8.GetBytes(password);
+        strmsg = Convert.ToBase64String(encode);
+        return strmsg;
+    }
+
+    /// Function is used to Decrypt the password
+    public static string Decryptdata(string encryptpwd)
+    {
+        string decryptpwd = string.Empty;
+        UTF8Encoding encodepwd = new System.Text.UTF8Encoding();
+        Decoder Decode = encodepwd.GetDecoder();
+        byte[] todecode_byte = Convert.FromBase64String(encryptpwd);
+        int charCount = Decode.GetCharCount(todecode_byte, 0, todecode_byte.Length);
+        char[] decoded_char = new char[charCount];
+        Decode.GetChars(todecode_byte, 0, todecode_byte.Length, decoded_char, 0);
+        decryptpwd = new String(decoded_char);
+        return decryptpwd;
+    }
+
+    public static void Show(string msg)
+    {
+        Page page = HttpContext.Current.Handler as Page;
+        msg = msg.Replace("\n", " ").Replace("\t", " ").Replace("\r", " ").Replace("\\", "").Replace("'", "`");
+        ScriptManager.RegisterClientScriptBlock(page, typeof(Page), "ClientScript", "alert('" + msg + "')", true);
+    }
+
+    public static void Show(string msg, string cls)
+    {
+        Page page = HttpContext.Current.Handler as Page;
+        msg = msg.Replace("\n", " ").Replace("\t", " ").Replace("\r", " ").Replace("\\", " ").Replace("'", "`");
+        ScriptManager.RegisterClientScriptBlock(page, typeof(Page), "ClientScript", "alert('" + msg + "');window.opener.document.forms[0].submit();window.close();", true);
+    }
+
+    public static void Show(string msg, string pagename, string cls)
+    {
+        Page page = HttpContext.Current.Handler as Page;
+        msg = msg.Replace("\n", " ").Replace("\t", " ").Replace("\r", " ").Replace("\\", " ").Replace("'", "`");
+        ScriptManager.RegisterClientScriptBlock(page, typeof(Page), "ClientScript", "alert('" + msg + "');window.location='" + pagename + "';", true);
+    }
+
+    public static string CheckDate(string sDate, char cMandatory)
+    {
+        DateTime dt;
+        string dt1 = string.Empty;
+        bool valid;
+        string sResult = string.Empty;
+
+        if ((char.ToUpper(cMandatory) == 'Y' || char.ToUpper(cMandatory) == 'N') && sDate.Length == 6)
+        {
+            dt1 = sDate.Substring(0, 2) + "/" + sDate.Substring(2, 2) + "/" + "20" + sDate.Substring(4, 2);
+            valid = DateTime.TryParseExact(dt1, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out dt);
+            if (!valid) sResult = "Invalid";
+        }
+        else
+        {
+            if (sDate.Length != 0) sResult = "Invalid";
+            if (char.ToUpper(cMandatory) == 'Y' && sDate.Length == 0) sResult = "Empty";
+        }
+
+        return sResult;
+    }
+
+    public static String ConvertDate(string sDate)
+    {
+        Boolean valid;
+        DateTime dt;
+        valid = DateTime.TryParseExact(sDate, "dd-mm-yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out dt);
+        if (!valid)
+            return "";
+        else
+        {
+            string dd = sDate.Substring(0, 2);
+            string mm = sDate.Substring(3, 2);
+            string yy = sDate.Substring(6, 4);
+            Byte bMonth = Convert.ToByte(mm);
+            string sResult = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
+            return dd + '-' + sResult.Substring((bMonth - 1) * 3, 3) + '-' + yy;
+        }
+    }
+
+    public static void Close(string msg)
+    {
+        Page page = HttpContext.Current.Handler as Page;
+        msg = msg.Replace("\n", " ").Replace("\t", " ").Replace("\r", " ").Replace("\\", " ").Replace("'", "`");
+        ScriptManager.RegisterClientScriptBlock(page, typeof(Page), "ClientScript", "alert('" + msg + "');window.open('', '_self');window.close();", true);
+    }
+    public static String FromToCheck(string sFromDt, string sToDt)
+    {
+        Int32 sFrom = Convert.ToInt32(sFromDt.Substring(6, 4) + sFromDt.Substring(3, 2) + sFromDt.Substring(0, 2));
+        Int32 sTo = Convert.ToInt32(sToDt.Substring(6, 4) + sToDt.Substring(3, 2) + sToDt.Substring(0, 2));
+        if (sTo < sFrom)
+            return "To Date should be >= From Date";
+        else
+        {
+            return "";
+        }
+    }
+    public static String FutureDTCheck(string sFromDt)
+    {
+        Int32 sFrom = Convert.ToInt32(sFromDt.Substring(6, 4) + sFromDt.Substring(3, 2) + sFromDt.Substring(0, 2));
+        Int32 sTo = Convert.ToInt32(DateTime.Today.Date.ToString("yyyyMMdd"));
+        if (sTo < sFrom)
+            return "Date should not  > system Date";
+        else
+        {
+            return "";
+        }
+    }
+}
+
+====================================================================================================================================================
+<%@ Page Language="C#" AutoEventWireup="true"  MasterPageFile="~/DRP_Master.master" CodeFile="ChangeNewPassword.aspx.cs" Inherits="ChangeNewPassword"  %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+    <center>           
+    <div Class="PageContent">  &nbsp;<table id="TABLE1" align="center" class="nnndTable" summary="Change Password">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col" colSpan="4"><asp:Label ID="lblTitle" runat="server" Text="Change Password" CssClass="PageTitle1"></asp:Label></th>
+                    <th scope="col"></th>
+                </tr>
+             </thead>
+             <tfoot>                
+                <tr>
+                    <td ></td>
+                    <td align="center" colspan="4">
+                        <asp:ImageButton id="ImgBtnSave" runat="server" ImageUrl="~/App_Themes/DRP_Theme/images/Save.gif" OnClientClick="PasswordValidation();" OnClick="ImgBtnSave_Click"></asp:ImageButton>
+                        <asp:ImageButton id="ImgBtnBack" runat="server" ImageUrl="~/App_Themes/DRP_Theme/images/Back.gif" CausesValidation="False" Visible="False" OnClick="ImgBtnBack_Click"></asp:ImageButton>
+                    </td>
+                    <td ></td>
+                </tr>
+             </tfoot>
+             <tbody>
+                <tr>
+                    <td></td>
+                    <td style="width: 192px"></td>
+                    <td style="width: 96px">Old Password</td>
+                    <td style="width: 181px">
+                        <asp:TextBox id="txtPassword" MaxLength="15" runat="server" TextMode="Password" Width="131px" ></asp:TextBox>&nbsp;
+                    </td>
+                    <td style="width: 181px">
+                        <asp:RequiredFieldValidator id="rqdPass" runat="server" ControlToValidate="txtPassword" ErrorMessage="Enter Old Password">*</asp:RequiredFieldValidator></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="width: 192px"></td>
+                    <td style="width: 96px">New Password</td>
+                    <td style="width: 181px" >
+                        <asp:TextBox id="txtNewPass" MaxLength="15" runat="server" TextMode="Password" Width="131px" onblur="PasswordValidation();"></asp:TextBox>                                  
+                    </td>
+                    <td style="width: 181px">
+                        <asp:RequiredFieldValidator id="RqdNewPass" runat="server" ControlToValidate="txtNewPass" Display="Dynamic" ErrorMessage="Enter New Password" >*</asp:RequiredFieldValidator></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td align="center" colspan="6">
+                        <asp:Label runat="server" id="lblnote" Text="Password must be of 8 to 15 charcters and a combination of alphabets, numbers and special chars." Font-Italic="True" ForeColor="Red" Width="483px" ></asp:Label></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="width: 192px"></td>
+                    <td style="width: 96px"><asp:Label runat="server" Text="Confirm New Passowrd" id="lblnewpass" Width="148px"></asp:Label></td>
+                    <td style="width: 181px">
+                            <asp:TextBox id="txtConfrmPass" MaxLength="15" runat="server" TextMode="Password" Width="131px" ></asp:TextBox>&nbsp;
+                    </td>
+                    <td style="width: 181px">
+                            <asp:CompareValidator ID="CompareValidator1" runat="server" ControlToCompare="txtNewPass" ControlToValidate="txtConfrmPass" ErrorMessage="The Confirm New Password must match the New Password entry.">*</asp:CompareValidator></td>
+                        <td></td>
+                </tr>
+              </tbody>
+         </table>       
+    <asp:ValidationSummary ID="ValidationSummary1" runat="server" ShowMessageBox="True" ShowSummary="False" /> 
+    </div>
+    </center>
+  
+</asp:Content>
+=================================================================================================================================================================================================
+
+HOMEPAGE
+--------
+
+
+<%@ Page Language="C#" MasterPageFile="~/DRP_Master.master" AutoEventWireup="true" CodeFile="HomePage.aspx.cs" Inherits="HomePage" Title="DRP Home" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+ <div class="HomePageContent">
+<br /><br /><br /><br /><br /><br /><br />
+
+</div> 
+</asp:Content>
+
+==============================================================================================================================
+
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+
+public partial class HomePage : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["UserId"] == null)
+        {
+            MessageBox.Show("Session Time out....!!!", "Login.aspx");
+            return;
+        }
+    }
+}
+====================================================================================================================================================
+
+
+MASTER PAGE
+------------
+
+<%@ Master Language="C#" AutoEventWireup="true" CodeFile="DRP_Master.master.cs" Inherits="DRP_Master" %>
+<%@ Register Assembly="System.Web.Extensions, Version=1.0.61025.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"
+    Namespace="System.Web.UI" TagPrefix="asp" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head runat="server">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>DRP</title>
+   <link href="App_Themes/DRP_Theme/StyleSheet.css" rel="stylesheet" type="text/css"/>
+   <style type="text/css">
+      .LockOff {
+         display: none;
+         visibility: hidden;
+      }
+
+      .LockOn {
+         display: block;
+         visibility: visible;
+         position: absolute;
+         z-index: 999;
+         top: 0px;
+         left: 0px;
+         width: 105%;
+         height: 105%;
+         background-color: #ccc;
+         text-align: center;
+         padding-top: 20%;
+         filter: alpha(opacity=75);
+         opacity: 0.75;
+      }
+   </style>
+</head>
+<%--<body background="App_Themes/DRP_Theme/images/background.jpg">--%>
+<body bgcolor="#CCCCCC">
+    <form id="form1" runat="server" >
+        <asp:ScriptManager ID="ScriptManager1" runat="server">
+        <Scripts>
+                <asp:ScriptReference Path="~/JScript.js" />
+            </Scripts> 
+        </asp:ScriptManager>
+        
+                     
+      <div id="container"  >
+        <div id="header">  
+        <table width="900px" style="height:100px" border="0" cellpadding="0" cellspacing="0" >
+            <tr>
+                <td style="width:179px; height: 46px;" valign="top">
+                    <asp:Image ID="Image1" runat="server" ImageUrl="~/App_Themes/DRP_Theme/images/CanaraBank.png" Height="38px" ImageAlign="Top" Width="206px"/><br />
+                </td>
+               <td style="width:662px; height: 46px;" align="center" valign="middle">
+                   <asp:Label ID="Label4" runat="server" Font-Bold="True" Font-Size="X-Large" ForeColor="#804040"
+                       Text="DEBT RESTRUCTURING PACKAGE" Font-Names="Comic Sans MS" Height="27px" Width="464px"></asp:Label>
+                   <asp:Label ID="Label5" runat="server" Font-Bold="True" ForeColor="#804040" Text="[ version 3.1 ]" Font-Names="Comic Sans MS"></asp:Label></td>
+                <td style="width:150px; height: 46px;">
+                    <table style="width: 200px">
+                        <tr>
+                            <td style="height: 12px; width: 28px;" align="left">
+                                <asp:Label ID="Label2" runat="server" BackColor="Transparent" Font-Bold="True" Font-Names="Verdana"
+                                    Font-Size="7.5pt" ForeColor="White" Text="USER ID:" Width="80px" ></asp:Label></td>
+                            <td style="height: 12px; width: 50px;" align="left">
+                                <asp:Label ID="lblUserId" runat="server" BackColor="Transparent" Font-Bold="True"
+                                    Font-Names="Verdana" Font-Size="7.5pt" ForeColor="White" Width="100px"></asp:Label></td>
+                            <td align="left" style="width: 50px; height: 12px">
+                            </td>
+                            <td align="left" style="width: 50px; height: 12px">
+                            </td>
+                            <td align="left" style="width: 50px; height: 12px">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 28px; height: 11px;" align="left">
+                                <asp:Label ID="Label1" runat="server" BackColor="Transparent" Font-Bold="True" Font-Names="Verdana"
+                                    Font-Size="7.5pt" ForeColor="White" Text="USER NAME:" Width="80px"></asp:Label></td>
+                            <td style="width: 50px; height: 11px;" align="left">
+                                <asp:Label ID="lblUserName" runat="server" BackColor="Transparent" Font-Bold="True"
+                                    Font-Names="Verdana" Font-Size="7.5pt" ForeColor="White" Width="92px"></asp:Label></td>
+                            <td align="left" style="width: 50px; height: 11px">
+                            </td>
+                            <td align="left" style="width: 50px; height: 11px">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 28px; height: 10px;" align="left">
+                                <asp:Label ID="lblDpCode" runat="server" BackColor="Transparent" Font-Bold="True"
+                                    Font-Names="Verdana" Font-Size="7.5pt" ForeColor="White" Text="BRANCH CODE:"
+                                    Width="88px"></asp:Label></td>
+                            <td style="width: 50px; height: 10px;" align="left">
+                                <asp:Label ID="lblDPCodeDes" runat="server" BackColor="Transparent" Font-Bold="True"
+                                    Font-Names="Verdana" Font-Size="7.5pt" ForeColor="White" Width="100px"></asp:Label></td>
+                            <td align="left" style="width: 50px; height: 10px">
+                            </td>
+                            <td align="left" style="width: 50px; height: 10px">
+                            </td>
+                        </tr>
+                        <%--<tr>
+                            <td style="width: 25px; height: 12px;" align="left">
+                                <asp:Label ID="Label3" runat="server" BackColor="Transparent" Font-Bold="True" Font-Names="Verdana"
+                                    Font-Size="6pt" ForeColor="White" Text="LOGGED-IN AT:"
+                                    Width="80px" Height="6px"></asp:Label></td>
+                            <td style="width: 50px; height: 12px;" align="left">
+                                <asp:Label ID="lblCurLogTime" runat="server" BackColor="Transparent" Font-Bold="True"
+                                    Font-Names="Tahoma" Font-Size="6pt" ForeColor="White" Width="100px" Height="6px"></asp:Label></td>
+                            <td align="left" style="width: 3px; height: 12px;">
+                            </td>
+                        </tr>--%>
+                         <tr>
+                            <td style="width: 28px; height: 10px;" align="left">
+                                <asp:Label ID="lblQrtrEnd" runat="server" BackColor="Transparent" Font-Bold="True" Font-Names="Verdana"
+                                    Font-Size="7.5pt" ForeColor="White" Text="QUARTER-END:"
+                                    Width="92px"></asp:Label></td>
+                            <td style="width: 50px; height: 10px;" align="left">
+                                <asp:Label ID="lblQrtrEndDate" runat="server" BackColor="Transparent" Font-Bold="True"
+                                    Font-Names="Verdana" Font-Size="7.5pt" ForeColor="White" Width="100px"></asp:Label></td>
+                             <td align="left" style="width: 50px; height: 10px">
+                             </td>
+                             <td align="left" style="width: 50px; height: 10px">
+                             </td>
+                            <%--<td style="height: 10px; width: 3px;" align="left">
+                            </td>
+                            <td style="height: 10px;" align="left">
+                            </td>--%>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>        
+        </div> 
+        <div id="MenuDiv" style="left: 0px; top: 0px">
+        <asp:UpdatePanel ID="UpdatePanel1" runat="server" UpdateMode="Conditional">
+        <ContentTemplate>
+            <div style="float:Right;">
+                &nbsp;<asp:ImageButton ID="ImgBtnLogout" onclick="ImgBtnLogout_Click" runat="server" ImageUrl="~/App_Themes/DRP_Theme/images/logout.png" AlternateText="Logout" CausesValidation="False" ToolTip="Logout" />                        
+            </div>
+            <asp:Menu ID="DRP_Menu" runat="server" Orientation="Horizontal" CssClass="Menu"  Forecolor="white" >
+                         <%--<Items>
+                    <asp:MenuItem Text="Masters" Value="Masters" >
+                        <asp:MenuItem Text="Parameters" Value="Parameters" NavigateUrl="~/DRP_Parameters.aspx"></asp:MenuItem>
+                        <asp:MenuItem Text="Circles" Value="Circles" NavigateUrl="~/DRP_Circles.aspx"></asp:MenuItem>
+                        <asp:MenuItem Text="Branches" Value="Branches" NavigateUrl="~/DRP_Branches.aspx"></asp:MenuItem>
+                    </asp:MenuItem>
+                    <asp:MenuItem Text="Upload" Value="Upload">
+                        <asp:MenuItem NavigateUrl="~/DRPUpload.aspx" Text="Upload Data" Value="Upload Data">
+                        </asp:MenuItem>
+                        <asp:MenuItem Text="Correction of Rejected Records" Value="Correction of Rejected Records" NavigateUrl="~/DRP_CorrectRec.aspx"></asp:MenuItem>
+                        <asp:MenuItem NavigateUrl="~/UploadedData.aspx" Text="View Uploaded Data (Above 1Cr)"
+                            Value="View Uploaded Data (Above 1Cr)"></asp:MenuItem>
+                    </asp:MenuItem>
+                    <asp:MenuItem Text="DFV Calculation" Value="DFV Calculation">
+                        <asp:MenuItem Text="1 Crore &amp; Above" Value="1 Crore &amp; Above" NavigateUrl="~/DrpRestructure.aspx"></asp:MenuItem>
+                    </asp:MenuItem>
+                             <asp:MenuItem Text="Download" Value="Download">
+                                 <asp:MenuItem Text="Customerwise DFV" Value="Customerwise DFV" NavigateUrl="~/DRP_Download.aspx"></asp:MenuItem>
+                             </asp:MenuItem>
+                    <asp:MenuItem Text="Reports" Value="Reports">
+                        <asp:MenuItem Text="Customer Wise DFV/Sacrifice" Value="Customer Wise DFV/Sacrifice" NavigateUrl="~/R_Customerwise.aspx"></asp:MenuItem>
+                        <asp:MenuItem Text="Circle Wise Summary Report" Value="Circle Wise Summary Report" NavigateUrl="~/R_CIRCLEWISE.aspx"></asp:MenuItem>
+                        <asp:MenuItem Text="Provision for Accounts (below 1 crore)" Value="Provision for Accounts (below 1 crore)" NavigateUrl="~/R_DFV_TL_BELOW_1CR.aspx"></asp:MenuItem>
+                        <asp:MenuItem Text="TL Accounts - PV Calculation Sheet" Value="TL Accounts - PV Calculation Sheet" NavigateUrl="~/R_PVCalc_TL1CrAbove.aspx" ></asp:MenuItem>
+                        <asp:MenuItem NavigateUrl="~/R_PVCalc_ODOCC.aspx" Text="ODCC Accounts - PV Calculation Sheet"
+                            Value="ODCC Accounts - PV Calculation Sheet"></asp:MenuItem>
+                        <asp:MenuItem Text="FITL Accounts - PV Calculation Sheet" Value="FITL Accounts - PV Calculation Sheet" NavigateUrl="~/R_FITL_ACCWISE.aspx"></asp:MenuItem>
+                        <asp:MenuItem Text="WCTL Accounts - PV Calculation Sheet" Value="WCTL Accounts - PV Calculation Sheet" NavigateUrl="~/R_WCTL_ACCWISE .aspx"></asp:MenuItem>
+                        <asp:MenuItem NavigateUrl="~/R_NPV_Protected.aspx" Text="Account wise Liability where NPV is Protected"
+                            Value="Account wise Liability where NPV is Protected"></asp:MenuItem>
+                        <asp:MenuItem NavigateUrl="~/R_AccountWise.aspx" Text="Account wise DFV/Sacrifice"
+                            Value="Account wise DFV/Sacrifice"></asp:MenuItem>
+                        <asp:MenuItem NavigateUrl="~/R_FullyOverDue.aspx" Text="Accounts which are Fully Overdue"
+                            Value="Accounts which are Fully Overdue"></asp:MenuItem>
+                        <asp:MenuItem NavigateUrl="~/R_KeyParameters.aspx" Text="Key Parameters used for DFV"
+                            Value="Key Parameters used for DFV"></asp:MenuItem>
+                    </asp:MenuItem>
+                    <asp:MenuItem Text="Help" Value="Help" NavigateUrl="~/Help.aspx" Target="_blank"></asp:MenuItem>
+                 </Items>--%>
+                <StaticHoverStyle BackColor="Transparent" ForeColor="Yellow" CssClass="menuhover" />
+                <StaticMenuItemStyle Font-Size="Medium" />
+                <DynamicHoverStyle ForeColor="Yellow" CssClass="menuhover" BackColor="Transparent" />
+                <DynamicSelectedStyle CssClass="Menu" />
+                <DynamicMenuItemStyle CssClass="Menu" />
+              
+              
+            </asp:Menu>            
+        </ContentTemplate>
+        <Triggers>
+            <asp:AsyncPostBackTrigger ControlID="DRP_Menu" EventName="MenuItemClick" />
+                  
+           
+        </Triggers>                         
+        </asp:UpdatePanel> 
+        </div>
+        <div id="content">
+          <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+          </asp:ContentPlaceHolder>
+        </div>
+        <div id="footer">
+                   
+        </div>
+    </div>       
+    </form>
+</body>
+</html>
+===========================================================================================================================
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using BL;
+
+public partial class DRP_Master : System.Web.UI.MasterPage
+{
+    //BLStaffDet objBLUserProf = new BLStaffDet();
+    //string Pkg_Id = ConfigurationManager.AppSettings["pkgid"];
+    BLMenu Menu = new BLMenu();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["UserId"] == null)
+        {
+            MessageBox.Show("Session Time out....!!!", "Login.aspx");
+            return;
+        }
+        if (!IsPostBack)
+        {
+            lblDPCodeDes.Text = "401";
+            lblUserName.Text = Session["UserName"].ToString();
+            lblUserId.Text = Session["UserId"].ToString();
+            lblQrtrEndDate.Text = Session["MisDate"].ToString();
+
+            DataTable dTable1 = new DataTable();
+            String sLoginType = String.Empty;
+            if (Session["UserId"].ToString() == "ADMIN")
+            {
+                sLoginType = "AD";
+            }
+            else
+            {
+                sLoginType = "GN";
+            }
+            dTable1 = Menu.FetchMenu(sLoginType);
+            Byte L1 = 0;
+            Byte L2 = 0;
+            Byte L3 = 0;
+            foreach (DataRow dRow in dTable1.Rows)
+            {
+                System.Web.UI.WebControls.MenuItem mnuitem = new System.Web.UI.WebControls.MenuItem();
+                L1 = Convert.ToByte(dRow["MENU_LEVEL1"]);
+                L2 = Convert.ToByte(dRow["MENU_LEVEL2"]);
+                L3 = Convert.ToByte(dRow["MENU_LEVEL3"]);
+                mnuitem.Text = Convert.ToString(dRow["MENU_TITLE"]);
+                mnuitem.NavigateUrl = Convert.ToString(dRow["MENU_URL"]);
+                if (L2 == 0 && L3 == 0)
+                    DRP_Menu.Items.Add(mnuitem);
+                else if (L2 > 0 && L3 == 0)
+                    DRP_Menu.Items[L1 - 1].ChildItems.Add(mnuitem);
+                else if (L2 > 0 && L3 > 0)
+                    DRP_Menu.Items[L1 - 1].ChildItems[L2 - 1].ChildItems.Add(mnuitem);
+            }
+            Menu = null;
+            dTable1.Dispose();
+            DRP_Menu.Visible = true;
+            //if (Session["LoginStatus"].ToString() == "0")
+            //{
+            //    DRP_Menu.Visible = true;
+            //}
+            //else
+            //{
+            //    DRP_Menu.Visible = false;
+            //}
+        }
+    }
+
+    private void If(object p)
+    {
+        throw new Exception("The method or operation is not implemented.");
+    }
+   
+    protected void ImgBtnLogout_Click(object sender, ImageClickEventArgs e)
+    {
+        Response.Redirect("Login.aspx");
+    }
+}
+
+
+
+
